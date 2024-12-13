@@ -10,7 +10,7 @@ const ticketSchema = new  mongoose.Schema({
         required :true,
     },
     fiyat : {
-        type : String,
+        type : Number,
         required : true,
     },
     tarih : {
