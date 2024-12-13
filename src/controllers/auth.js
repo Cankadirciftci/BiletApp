@@ -1,30 +1,57 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { secret_key } from "../config/env/index.js";
-import Users from "../Model/User.js";
+import User from "../Model/User.js";
+import Wallet from "../Model/Wallet.js"
 
 async function register(req, res) {
-    try{
-        const{ fullName, email, password } = req.body;
-        
-        const existingUser = await Users.findOne({email});
-        if (existingUser){
-            return res.status(400).json({ error: "Kullanıcı zaten mevcut"});
+    const { fullName, email, password } = req.body;
+
+    try {
+        // Kullanıcının zaten var olup olmadığını kontrol et
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: "Bu email adresiyle kullanıcı zaten kayıtlı." });
         }
-        
-        const user = new Users({
+
+        // Şifreyi hash'le
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+            // Kullanıcı için cüzdan oluştur
+            const wallet = await Wallet.create({
+                balance: 0, // Varsayılan bakiye
+            });
+        // Yeni kullanıcı oluştur
+        const newUser = await User.create({
             fullName,
             email,
-            password,
             password: hashedPassword,
+            walletId: wallet._id, 
         });
-        await user.save();
-        res.status(201).json({ message: "Kullanıcı başarıyla oluşturuldu"});
-    }catch(error){
-        res.status(500).json({error: error.message});
+
+        wallet.userId = newUser._id;
+        await wallet.save();
+
+
+        res.status(201).json({
+            message: "Kullanıcı ve cüzdan başarıyla oluşturuldu.",
+            user: {
+                id: newUser._id,
+                fullName: newUser.fullName,
+                email: newUser.email,
+            },
+            wallet: {
+                id: wallet._id,
+                balance: wallet.balance,
+            },
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Server error.", error: error.message });
     }
-    
 }
+
+export { register };
+
 
 async function login(req, res) {
     try{
@@ -35,7 +62,7 @@ async function login(req, res) {
                 error:"Geçersin istek, giriş yapmak için hem e-posta hem de şifre sağlayın.",
             });
         }
-        const user =await Users.findOne({email});
+        const user =await User.findOne({email});
 
         if(!user){
             return res.status(401).json({
@@ -60,4 +87,4 @@ async function login(req, res) {
 }
 
 
-export{register, login};
+export{login};

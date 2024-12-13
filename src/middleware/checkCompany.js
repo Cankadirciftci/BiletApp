@@ -2,13 +2,15 @@ import Companys from '../Model/Company.js';
 
 const checkCompany = async (req, res, next) => {
     try {
-        const companyId = req.companyId;
-        const campany = await Companys.findById(companyId);
+      
+        const firmaId = req.firmaId;
+     
+        const company = await Companys.findById(firmaId);
 
-        if(!campany){
+        if(!company){
             return res.status(404).json({message: ' not found'});
         }
-        req.campany = campany;
+        req.firma = company;
         next();
     }catch(error){
         return res.status(500).json({message: error.message});

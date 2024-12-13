@@ -16,8 +16,20 @@ const userSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now,
-    }
-})
+    },
+    tickets : [
+        {
+            type : mongoose.Schema.Types.ObjectId,
+            ref : "Ticket",
+        },
+    ],
+    walletId: { 
+        type: mongoose.Schema.Types.ObjectId,
+         ref: "Wallet" 
+        },
+    
+    
+});
 
 const userModel = mongoose.model("User", userSchema);
 export default userModel;

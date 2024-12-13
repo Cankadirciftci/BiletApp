@@ -10,7 +10,7 @@ const verifyToken_2 = (req, res, next) => {
     }
     try{
         const decoded = jwt.verify(token, secret_key_2);
-        req.companyId = decoded.companyId;
+        req.firmaId = decoded.firmaId;
         next();
     }
     catch(error){

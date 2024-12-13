@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const firmaSchema = new mongoose.Schema({
+const companySchema = new mongoose.Schema({
     eposta :{
         type : String,
         required : true,
@@ -13,13 +13,13 @@ const firmaSchema = new mongoose.Schema({
         type : String,
         required : true,
     },
-    yol : [
+    tickets : [
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "güzergah",
+            ref: "Ticket",
         },
     ],
 });
 
-const firma = mongoose.model('firma', firmaSchema);
+const firma = mongoose.model('firma', companySchema);
 export default firma;

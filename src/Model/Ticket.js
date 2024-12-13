@@ -16,8 +16,12 @@ const ticketSchema = new  mongoose.Schema({
     tarih : {
         type : Date,
         default : Date.now,
+    },
+    updatedAt: {
+        type: Date,
+        default: Date.now
     }
 })
 
-const ticketModel = mongoose.model("Ticket", ticketSchema);
-export default ticketModel;
+const ticket = mongoose.model("Ticket", ticketSchema);
+export default ticket;
