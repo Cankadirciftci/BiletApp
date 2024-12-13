@@ -13,6 +13,10 @@ const ticketSchema = new  mongoose.Schema({
         type : Number,
         required : true,
     },
+    adet : {
+        type : Number,
+        required : true,
+    },
     tarih : {
         type : Date,
         default : Date.now,

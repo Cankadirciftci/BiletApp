@@ -57,7 +57,7 @@ async function buyTicket(req, res) {
 
     const userId = req.params.userid;
     const ticketId = req.params.ticketid;
-
+    const adet = req.body.adet;
     try {
         const user = await User.findById(userId);
         if (!user){
@@ -74,11 +74,17 @@ async function buyTicket(req, res) {
         if (wallet.balance < ticket.fiyat){
             return res.status(400).json({message : "Bakiye yetersiz."})
         }
-        wallet.balance -= ticket.fiyat;
-        await wallet.save();
-
-        user.tickets.push(ticketId);
-        await user.save();
+        
+        if(ticket.adet >= adet){
+            wallet.balance -= ticket.fiyat;
+            await wallet.save();
+    
+            user.tickets.push(ticketId);
+            await user.save();
+            ticket.adet -= adet;
+            await ticket.save();
+        }
+       
         
         return res.status(200).json({message: "Bilet başarıyla satın alındı." });
     }catch(error){
