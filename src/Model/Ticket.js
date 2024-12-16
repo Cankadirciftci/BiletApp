@@ -17,7 +17,15 @@ const ticketSchema = new  mongoose.Schema({
         type : Number,
         required : true,
     },
-    tarih : {
+    isActive : {
+        type : Boolean,
+        required : true,
+    },
+    expirationDate : {
+        type : Date,
+        required : true,
+    },
+    cretedAt: {
         type : Date,
         default : Date.now,
     },

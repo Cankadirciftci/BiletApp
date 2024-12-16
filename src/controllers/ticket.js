@@ -2,21 +2,64 @@ import Ticket from "../Model/Ticket.js";
 import Company from "../Model/Company.js";
 import User from "../Model/User.js";
 import Wallet from "../Model/Wallet.js";
+import scheduleTicketExpiration from '../utils/schedule.js';
+
+const formatDate = (date) => {
+    const d = new Date(date);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    return `${day}.${month}.${year} ${hours}:${minutes}`;
+};
 
 async function createTicket(req, res) {
-    const firma = req.firma;
-    try{
-        const ticket = new Ticket(req.body);
+    console.log('Request Body:', req.body);
+
+    const parseDateTime = (dateTimeString) => {
+        const [datePart, timePart] = dateTimeString.split(' ');
+        const [day, month, year] = datePart.split('.');
+        const [hours, minutes] = timePart.split(':');
+        return new Date(year, month - 1, day, hours, minutes);
+    };
+
+    try {
+        const { güzergah, fiyat, adet, isActive, expirationDate } = req.body;
+
+        if (!güzergah || !fiyat || !adet || !isActive || !expirationDate) {
+            return res.status(400).json({ error: 'Tüm alanlar gereklidir.' });
+        }
+
+        const parsedDateTime = parseDateTime(expirationDate); // Tarihi parse et
+        if (isNaN(parsedDateTime.getTime())) {
+            return res.status(400).json({ error: 'Geçerli bir tarih ve saat formatı giriniz (DD.MM.YYYY HH:mm).' });
+        }
+
+        const ticket = new Ticket({
+            firma: req.body.firma || req.firma,
+            güzergah,
+            fiyat: parseFloat(fiyat),
+            adet,
+            isActive,
+            expirationDate: parsedDateTime, // Date olarak kaydet
+        });
+
         await ticket.save();
 
-        firma.tickets.push(ticket);
-        await firma.save();
-        res.status(200).json({
-            message : "Bilet başarıyla oluşturuldu"
+        scheduleTicketExpiration(ticket._id, parsedDateTime); // Tarihe göre zamanlayıcı ayarla
+
+        res.status(201).json({
+            message: 'Bilet başarıyla oluşturuldu.',
+            ticket: {
+                ...ticket.toObject(),
+                expirationDate: formatDate(ticket.expirationDate), // Formatlı tarih dön
+            },
         });
-    }catch (error) {
-        res.status(500).json({message : "Server error"});
-    }   
+    } catch (error) {
+        console.error('Hata:', error);
+        res.status(400).json({ message: 'Veri doğrulama hatası. Lütfen tüm alanları kontrol edin.', error });
+    }
 }
 
 async function updateTicket(req, res) {
