@@ -3,6 +3,8 @@ import Company from "../Model/Company.js";
 import User from "../Model/User.js";
 import Wallet from "../Model/Wallet.js";
 import scheduleTicketExpiration from '../utils/schedule.js';
+import redis from "../config/env/index.js";
+
 
 const formatDate = (date) => {
     const d = new Date(date);
@@ -136,10 +138,32 @@ async function buyTicket(req, res) {
 
 }   
 
+async function getUserTickets(req, res) {
+    const userId = req.params.userid;
+
+    try {
+        const cachedTickets = await redis.get(`user:${userId}:tickets`);
+        if(cachedTickets){
+            return res.status(200).json(JSON.parse(cachedTickets));
+        }
+
+        const user = await User.findById(userId).populate('tickets');
+        if(!user){
+            return res.status(400).json({message : "Kullanıcı bulunamadı."});
+        }
+
+        await redis.setex(`user:${userId}:tickets`, 3600, JSON.stringify(user.tickets));
+        return res.status(200).json(user.tickets);
+    }catch(error){
+        console.error("Redis veya veritabanı hatası:", error);
+        res.status(500).json({message : "Server error."});
+    }
+}
 
 export {
     createTicket,
     updateTicket,
     deleteTicket,
     buyTicket,
+    getUserTickets,
 };
