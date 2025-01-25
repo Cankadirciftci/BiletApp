@@ -19,6 +19,13 @@ const companySchema = new mongoose.Schema({
             ref: "Ticket",
         },
     ],
+    bus : [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref : "Bus",
+        },
+    ],
+
 });
 
 const firma = mongoose.model('firma', companySchema);

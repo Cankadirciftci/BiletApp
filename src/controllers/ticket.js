@@ -17,7 +17,7 @@ const formatDate = (date) => {
 };
 
 async function createTicket(req, res) {
-    console.log('Request Body:', req.body);
+    
 
     const parseDateTime = (dateTimeString) => {
         const [datePart, timePart] = dateTimeString.split(' ');
